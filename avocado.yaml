@@ -1,16 +1,12 @@
 supported_targets: '*'
 
-distro:
-  release: 2024
-  channel: edge
-
 extensions:
   avocado-ext-coreutils:
     # sysext only. Every package here lands under /usr, and none of them needs
     # a unit or anything in /etc, so there is nothing for a confext to carry.
     types:
       - sysext
-    version: 1.0.0
+    version: 0.1.0
     release: r0
     summary: GNU userland in place of the BusyBox applets
     description: >
@@ -20,6 +16,9 @@ extensions:
       that break otherwise-correct commands. That is fine for a shipped image
       and costly on a board someone - or an agent - is driving interactively.
       Development only.
+    license: Apache-2.0
+    url: https://github.com/avocado-linux/ext-coreutils
+    vendor: Avocado Linux <info@avocadolinux.org>
 
     packages:
       # The applets people actually trip over. coreutils alone is not enough:
@@ -40,19 +39,8 @@ extensions:
       # in ways that read as logic bugs rather than as a missing feature.
       bash: '*'
 
+# Release-scoped, not channel-scoped: this resolves to avocadolinux/sdk:2026.
+# The SDK image is per-release only - appending the channel points at a tag
+# that does not exist.
 sdk:
-  image: docker.io/avocadolinux/sdk:{{ avocado.distro.release }}-{{ avocado.distro.channel }}
-
-  packages:
-    # avocado-cli emits an erofs formatter call for every extension whose type
-    # is erofs (commands/ext/image.rs:921) without declaring the tool it needs,
-    # so on a clean SDK the content builds and the image step then dies on
-    # command-not-found.
-    #
-    # avocado-debt: per-project workaround for a CLI/SDK gap. Ceiling:
-    # one project at a time - most of the in-tree bsp/ and extensions/ configs
-    # still lack this and fail identically the moment someone builds them on a
-    # clean SDK. Upgrade trigger: avocado-cli declares the formatter alongside
-    # the call site, or the SDK image ships it - then delete this block rather
-    # than copying it to the next config.
-    nativesdk-erofs-utils: '*'
+  image: docker.io/avocadolinux/sdk:{{ env.AVOCADO_DISTRO_RELEASE }}
